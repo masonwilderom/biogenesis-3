@@ -33,20 +33,31 @@ export interface StructuredData {
   social_links: { platform: string; url: string }[]
 }
 
-export interface TemplateSlot {
-  name: string
-  marker: string
+export interface BlockFieldSchema {
+  type: "string" | "array"
+  hint?: string
+  items?: Record<string, string>
 }
+
+export interface BlockManifestEntry {
+  name: string
+  optional: boolean
+  fields: Record<string, BlockFieldSchema>
+}
+
+export interface TemplateManifest {
+  name: string
+  description: string
+  types: string[]
+  blocks: BlockManifestEntry[]
+}
+
+export type ContentPayload = Record<string, Record<string, unknown> | null>
 
 export interface Template {
   name: string
   path: string
-  slots: TemplateSlot[]
-}
-
-export interface SiteContext {
-  slug: string
-  dir: string
+  manifest: TemplateManifest
 }
 
 export const STAGING_BRANCH = "staging"
