@@ -1,50 +1,24 @@
-import { cn } from "@/lib/utils";
-import { useState } from "react";
 export default function Example() {
     return (
-        <>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-            
-                * {
-                    font-family: 'Poppins', sans-serif;
-                }
-            `}</style>
-            <div className="flex flex-wrap items-center justify-center gap-6">
-                <div className="max-w-80 bg-black text-white rounded-2xl">
-                    <div className="relative -mt-px overflow-hidden rounded-2xl">
-                        <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=600" alt="" className="h-[270px] w-full rounded-2xl hover:scale-105 transition-all duration-300 object-cover object-top" />
-                        <div className="absolute bottom-0 z-10 h-60 w-full bg-gradient-to-t pointer-events-none from-black to-transparent"></div>
-                    </div>
-                    <div className="px-4 pb-4">
-                        <p className="font-medium border-b border-gray-600 pb-5">“Radiant made undercutting all of our competitors an absolute breeze.”</p>
-                        <p className="mt-4">— John Doe</p>
-                        <p className="text-sm font-medium bg-gradient-to-r from-[#8B5CF6] via-[#E0724A] to-[#9938CA] text-transparent bg-clip-text">Content Marketing</p>
-                    </div>
-                </div>
-                <div className="max-w-80 bg-black text-white rounded-2xl">
-                    <div className="relative -mt-px overflow-hidden rounded-2xl">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=600" alt="" className="h-[270px] w-full rounded-2xl hover:scale-105 transition-all duration-300 object-cover object-top" />
-                        <div className="absolute bottom-0 z-10 h-60 w-full bg-gradient-to-t pointer-events-none from-black to-transparent"></div>
-                    </div>
-                    <div className="px-4 pb-4">
-                        <p className="font-medium border-b border-gray-600 pb-5">“Radiant made undercutting all of our competitors an absolute breeze.”</p>
-                        <p className="mt-4">— John Doe</p>
-                        <p className="text-sm font-medium bg-gradient-to-r from-[#8B5CF6] via-[#E0724A] to-[#9938CA] text-transparent bg-clip-text">Content Marketing</p>
-                    </div>
-                </div>
-                <div className="max-w-80 bg-black text-white rounded-2xl">
-                    <div className="relative -mt-px overflow-hidden rounded-2xl">
-                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=600&h=600&auto=format&fit=crop" alt="" className="h-[270px] w-full rounded-2xl hover:scale-105 transition-all duration-300 object-cover object-top" />
-                        <div className="absolute bottom-0 z-10 h-60 w-full bg-gradient-to-t pointer-events-none from-black to-transparent"></div>
-                    </div>
-                    <div className="px-4 pb-4">
-                        <p className="font-medium border-b border-gray-600 pb-5">“Radiant made undercutting all of our competitors an absolute breeze.”</p>
-                        <p className="mt-4">— John Doe</p>
-                        <p className="text-sm font-medium bg-gradient-to-r from-[#8B5CF6] via-[#E0724A] to-[#9938CA] text-transparent bg-clip-text">Content Marketing</p>
+        <div className="flex flex-col items-center justify-center p-6 md:p-14 w-full bg-blue-700 text-white">
+            <a className="mb-8 md:mb-12" href="https://prebuiltui.com">
+                <img className="h-10" src="https://prebuiltui.com/logo.svg?p=white&s=white&t=white" alt="logo white" />
+            </a>
+            <div className="flex flex-col items-center">
+                <p className="md:text-3xl text-xl text-center">Our learners are at the heart of everything we do. Explore their inspiring stories of growth, success, and how we helped them achieve their goals.</p>
+                <div className="flex items-center gap-2 mt-8">
+                    <img className="w-12 h-12 md:w-16 md:h-16 rounded-full" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=100" alt="profileImg1" />
+                    <div className="text-sm">
+                        <p className="font-medium text-lg">Donald Jackman</p>
+                        <p>SWE 1 @ Amazon</p>
                     </div>
                 </div>
             </div>
-        </>
+            <div className="flex items-center gap-2 mt-8">
+                <div className="w-3 h-3 md:w-4 md:h-4 bg-white rounded-full"></div>
+                <div className="w-3 h-3 md:w-4 md:h-4 bg-slate-400 rounded-full"></div>
+                <div className="w-3 h-3 md:w-4 md:h-4 bg-slate-400 rounded-full"></div>
+            </div>
+        </div>
     );
 };

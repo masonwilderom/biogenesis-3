@@ -1,8 +1,0 @@
-{
-  "name": "image-gallery",
-  "type": "registry:component",
-  "title": "Image Gallery",
-  "description": "A image-gallery component.",
-  "dependencies": [],
-  "registryDependencies": []
-}

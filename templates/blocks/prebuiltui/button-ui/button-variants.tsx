@@ -1,0 +1,17 @@
+"use client";
+
+import React from "react";
+
+
+export default function Example() {
+    return (
+        <div className="flex flex-wrap items-center justify-center gap-5 md:gap-12">
+            <button type="button" className="px-6 py-2 active:scale-95 transition bg-blue-500 rounded text-white text-sm font-medium">Solid</button>
+            <button type="button" className="px-6 py-2 active:scale-95 transition bg-gray-500/15 border border-gray-500/20 rounded text-blue-500 text-sm font-medium">Faded</button>
+            <button type="button" className="px-6 py-2 active:scale-95 transition bg-gray-500/15 border border-blue-500 rounded text-blue-500 text-sm font-medium">Bordered</button>
+            <button type="button" className="px-6 py-2 active:scale-95 transition text-blue-500 text-sm font-medium">Light</button>
+            <button type="button" className="px-6 py-2 active:scale-95 transition bg-blue-500/20 rounded text-blue-500 text-sm font-medium">Flat</button>
+            <button type="button" className="px-6 py-2 active:scale-95 transition bg-blue-500 rounded text-white shadow-lg shadow-blue-500/30 text-sm font-medium">Shadow</button>
+        </div>
+    );
+};

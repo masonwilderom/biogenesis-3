@@ -1,8 +1,0 @@
-{
-  "name": "banner-ui",
-  "type": "registry:component",
-  "title": "Banner Ui",
-  "description": "A banner-ui component.",
-  "dependencies": [],
-  "registryDependencies": []
-}

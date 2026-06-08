@@ -1,8 +1,0 @@
-{
-  "name": "cards",
-  "type": "registry:component",
-  "title": "Cards",
-  "description": "A cards component.",
-  "dependencies": [],
-  "registryDependencies": []
-}
