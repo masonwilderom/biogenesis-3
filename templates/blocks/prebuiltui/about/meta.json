@@ -1,0 +1,8 @@
+{
+  "name": "about",
+  "type": "registry:component",
+  "title": "About",
+  "description": "A about component.",
+  "dependencies": [],
+  "registryDependencies": []
+}

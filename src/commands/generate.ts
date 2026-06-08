@@ -82,7 +82,7 @@ export async function generate(url: string, templateName?: string): Promise<void
   await scaffoldSite(siteDir)
 
   // 4. Install blocks from manifest
-  await installBlocks(siteDir, template.manifest.blocks)
+  await installBlocks(siteDir, template.manifest.blocks, template.manifest.source)
 
   // 5. Read installed block files for LLM
   console.log("  Reading installed block files...")

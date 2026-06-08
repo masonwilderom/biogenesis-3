@@ -9,19 +9,21 @@ const TEMP_DIR = join(import.meta.dirname, "../../test-tmp-manifests")
 const restaurantManifest: TemplateManifest = {
   name: "restaurant-one",
   description: "Restaurants and food businesses",
+  source: "prebuiltui",
   types: ["restaurant", "cafe", "bakery"],
   blocks: [
-    { name: "hero-01", registry_url: "https://21st.dev/r/test/hero-01", optional: false, fields: { heading: { type: "string" } } },
-    { name: "footer-01", registry_url: "https://21st.dev/r/test/footer-01", optional: false, fields: { business_name: { type: "string" } } },
+    { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
+    { name: "footer-01", optional: false, fields: { business_name: { type: "string" } } },
   ],
 }
 
 const genericManifest: TemplateManifest = {
   name: "generic-one",
   description: "Generic fallback",
+  source: "prebuiltui",
   types: ["*"],
   blocks: [
-    { name: "hero-01", registry_url: "https://21st.dev/r/test/hero-01", optional: false, fields: { heading: { type: "string" } } },
+    { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
   ],
 }
 

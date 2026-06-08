@@ -1,0 +1,8 @@
+{
+  "name": "testimonial",
+  "type": "registry:component",
+  "title": "Testimonial",
+  "description": "A testimonial component.",
+  "dependencies": [],
+  "registryDependencies": []
+}

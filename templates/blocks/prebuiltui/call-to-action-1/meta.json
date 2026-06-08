@@ -1,0 +1,8 @@
+{
+  "name": "call-to-action-1",
+  "type": "registry:component",
+  "title": "Call To Action 1",
+  "description": "A call-to-action-1 component.",
+  "dependencies": [],
+  "registryDependencies": []
+}

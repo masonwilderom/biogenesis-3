@@ -1,0 +1,8 @@
+{
+  "name": "faq-sections",
+  "type": "registry:component",
+  "title": "Faq Sections",
+  "description": "A faq-sections component.",
+  "dependencies": [],
+  "registryDependencies": []
+}

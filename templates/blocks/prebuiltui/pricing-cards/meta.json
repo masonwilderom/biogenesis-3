@@ -1,0 +1,8 @@
+{
+  "name": "pricing-cards",
+  "type": "registry:component",
+  "title": "Pricing Cards",
+  "description": "A pricing-cards component.",
+  "dependencies": [],
+  "registryDependencies": []
+}

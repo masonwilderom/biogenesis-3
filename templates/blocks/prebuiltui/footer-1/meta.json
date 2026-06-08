@@ -1,0 +1,8 @@
+{
+  "name": "footer-1",
+  "type": "registry:component",
+  "title": "Footer 1",
+  "description": "A footer-1 component.",
+  "dependencies": [],
+  "registryDependencies": []
+}

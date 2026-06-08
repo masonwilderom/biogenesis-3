@@ -1,0 +1,8 @@
+{
+  "name": "feature-sections",
+  "type": "registry:component",
+  "title": "Feature Sections",
+  "description": "A feature-sections component.",
+  "dependencies": [],
+  "registryDependencies": []
+}

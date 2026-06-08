@@ -8,7 +8,7 @@ export async function scaffoldSite(siteDir: string): Promise<void> {
 
   console.log("  Scaffolding Astro project...")
 
-  // Step 1: Create Astro project (skip interactive prompts)
+  // Step 1: Create Astro project
   const create = await $`bun create astro@latest ${siteDir} -- --template minimal --skip-houston --no-install`.nothrow()
   if (create.exitCode !== 0) {
     throw new Error(`Failed to create Astro project:\n${create.stderr.toString()}`)
@@ -24,12 +24,6 @@ export async function scaffoldSite(siteDir: string): Promise<void> {
   const tailwindAdd = await $`bun astro add tailwind --yes`.cwd(siteDir).nothrow()
   if (tailwindAdd.exitCode !== 0) {
     throw new Error(`Failed to add Tailwind:\n${tailwindAdd.stderr.toString()}`)
-  }
-
-  // Step 4: Initialize shadcn
-  const shadcnInit = await $`npx shadcn@latest init --defaults --yes`.cwd(siteDir).nothrow()
-  if (shadcnInit.exitCode !== 0) {
-    throw new Error(`Failed to init shadcn:\n${shadcnInit.stderr.toString()}`)
   }
 
   console.log("  Scaffold complete.")

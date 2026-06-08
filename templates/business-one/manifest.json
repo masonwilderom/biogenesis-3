@@ -1,17 +1,17 @@
 {
   "name": "business-one",
-  "description": "General-purpose small business landing page. Blocks sourced from prebuiltui on 21st.dev. All components share Poppins font and consistent styling.",
+  "description": "General-purpose small business landing page. Blocks sourced from prebuiltui.",
+  "source": "prebuiltui",
   "types": ["*"],
   "blocks": [
     {
       "name": "hero-section",
-      "registry_url": "https://21st.dev/r/prebuiltui/hero-section",
       "optional": false,
       "fields": {
-        "heading": { "type": "string", "hint": "Main headline text, displayed in large font (text-4xl md:text-7xl)" },
+        "heading": { "type": "string", "hint": "Main headline text, displayed in large font" },
         "subtitle": { "type": "string", "hint": "Supporting paragraph below the heading" },
-        "announcement_text": { "type": "string", "hint": "Small banner text above the heading, e.g. 'New announcement on your inbox'" },
-        "announcement_cta": { "type": "string", "hint": "CTA link text for the announcement banner, e.g. 'Read more'" },
+        "announcement_text": { "type": "string", "hint": "Small banner text above the heading" },
+        "announcement_cta": { "type": "string", "hint": "CTA link text for the announcement banner" },
         "cta_primary_label": { "type": "string", "hint": "Primary button text, e.g. 'Get Started'" },
         "cta_primary_href": { "type": "string", "hint": "Link for the primary CTA button" },
         "cta_secondary_label": { "type": "string", "hint": "Secondary button text, e.g. 'Learn More'" },
@@ -21,59 +21,47 @@
     },
     {
       "name": "feature-sections",
-      "registry_url": "https://21st.dev/r/prebuiltui/feature-sections",
       "optional": false,
       "fields": {
-        "heading": { "type": "string", "hint": "Section heading, e.g. 'Powerful Features' or 'What We Offer'" },
+        "heading": { "type": "string", "hint": "Section heading, e.g. 'What We Offer'" },
         "subtitle": { "type": "string", "hint": "Brief description below the heading" },
         "features": {
           "type": "array",
           "hint": "Feature cards. Each has an image, title, and description. Create 3-6 items.",
-          "items": {
-            "image_url": "string",
-            "title": "string",
-            "description": "string"
-          }
+          "items": { "image_url": "string", "title": "string", "description": "string" }
         }
       }
     },
     {
       "name": "call-to-action-1",
-      "registry_url": "https://21st.dev/r/prebuiltui/call-to-action-1",
       "optional": false,
       "fields": {
-        "community_text": { "type": "string", "hint": "Social proof text above heading, e.g. 'Join community of 1m+ founders'" },
+        "community_text": { "type": "string", "hint": "Social proof text above heading" },
         "heading": { "type": "string", "hint": "CTA heading, displayed as large gradient text" },
-        "button_label": { "type": "string", "hint": "Button text, e.g. 'Contact Us' or 'Get Started'" },
+        "button_label": { "type": "string", "hint": "Button text, e.g. 'Contact Us'" },
         "button_href": { "type": "string", "hint": "Button link destination" },
-        "avatar_urls": {
-          "type": "array",
-          "hint": "3 avatar image URLs for the social proof section",
-          "items": { "url": "string" }
-        }
+        "avatar_urls": { "type": "array", "items": { "url": "string" }, "hint": "3 avatar image URLs" }
       }
     },
     {
       "name": "testimonial",
-      "registry_url": "https://21st.dev/r/prebuiltui/testimonial",
       "optional": true,
       "fields": {
-        "logo_url": { "type": "string", "hint": "Business logo URL displayed above the testimonial" },
-        "heading": { "type": "string", "hint": "Intro text before the testimonial quote, e.g. 'Hear from our customers'" },
-        "quote": { "type": "string", "hint": "The testimonial quote/statement" },
-        "author_name": { "type": "string", "hint": "Name of the person giving the testimonial" },
-        "author_role": { "type": "string", "hint": "Job title or role of the author" },
-        "author_image_url": { "type": "string", "hint": "Profile image URL for the author" }
+        "logo_url": { "type": "string", "hint": "Business logo URL" },
+        "heading": { "type": "string", "hint": "Intro text before the testimonial quote" },
+        "quote": { "type": "string", "hint": "The testimonial quote" },
+        "author_name": { "type": "string", "hint": "Name of the person" },
+        "author_role": { "type": "string", "hint": "Job title or role" },
+        "author_image_url": { "type": "string", "hint": "Profile image URL" }
       }
     },
     {
       "name": "footer-1",
-      "registry_url": "https://21st.dev/r/prebuiltui/footer-1",
       "optional": false,
       "fields": {
         "logo_url": { "type": "string", "hint": "Business logo URL" },
-        "description": { "type": "string", "hint": "Short business description displayed below the logo" },
-        "business_name": { "type": "string", "hint": "Business name for copyright text" }
+        "description": { "type": "string", "hint": "Short business description" },
+        "business_name": { "type": "string", "hint": "Business name for copyright" }
       }
     }
   ]

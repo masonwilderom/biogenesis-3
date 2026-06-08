@@ -1,0 +1,8 @@
+{
+  "name": "hero-section",
+  "type": "registry:component",
+  "title": "Hero Section",
+  "description": "A hero-section component.",
+  "dependencies": [],
+  "registryDependencies": []
+}
