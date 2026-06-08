@@ -27,10 +27,14 @@ export async function summarize(
   const response = await provider.generate(SUMMARIZE_PROMPT, rawText)
 
   try {
-    const jsonStart = response.indexOf("{")
-    const jsonEnd = response.lastIndexOf("}") + 1
-    const json = response.slice(jsonStart, jsonEnd)
-    return JSON.parse(json) as StructuredData
+    let json = response
+    const mdMatch = json.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (mdMatch) {
+      json = mdMatch[1].trim()
+    }
+    const jsonStart = json.indexOf("{")
+    const jsonEnd = json.lastIndexOf("}") + 1
+    return JSON.parse(json.slice(jsonStart, jsonEnd)) as StructuredData
   } catch {
     throw new Error("Failed to parse summarized data from LLM response")
   }

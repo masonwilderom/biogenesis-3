@@ -110,9 +110,15 @@ export async function generate(url: string, templateName?: string, customSlug?: 
   let files: Record<string, string>
   let data: Record<string, unknown | null>
   try {
-    const jsonStart = llmResponse.indexOf("{")
-    const jsonEnd = llmResponse.lastIndexOf("}") + 1
-    const parsed = JSON.parse(llmResponse.slice(jsonStart, jsonEnd))
+    // Handle markdown-wrapped JSON (```json ... ```)
+    let json = llmResponse
+    const mdMatch = json.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (mdMatch) {
+      json = mdMatch[1].trim()
+    }
+    const jsonStart = json.indexOf("{")
+    const jsonEnd = json.lastIndexOf("}") + 1
+    const parsed = JSON.parse(json.slice(jsonStart, jsonEnd))
     files = parsed.files || {}
     data = parsed.data || {}
   } catch {

@@ -108,9 +108,14 @@ export async function iterate(slug: string, prompt: string, admin = false): Prom
 
   let fileMap: Record<string, string>
   try {
-    const jsonStart = editResponse.indexOf("{")
-    const jsonEnd = editResponse.lastIndexOf("}") + 1
-    fileMap = JSON.parse(editResponse.slice(jsonStart, jsonEnd))
+    let json = editResponse
+    const mdMatch = json.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (mdMatch) {
+      json = mdMatch[1].trim()
+    }
+    const jsonStart = json.indexOf("{")
+    const jsonEnd = json.lastIndexOf("}") + 1
+    fileMap = JSON.parse(json.slice(jsonStart, jsonEnd))
   } catch {
     throw new Error("LLM returned malformed response — unable to parse file changes")
   }

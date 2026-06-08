@@ -42,12 +42,6 @@
             "cta_secondary_label": { "type": "string", "hint": "Secondary button, e.g. 'Our Services'" }
           }
         },
-        { "name": "logo-clouds-01", "optional": true,
-          "fields": {
-            "heading": { "type": "string", "hint": "e.g. 'Trusted By' or 'Proud Members Of'" },
-            "logos": { "type": "array", "items": { "name": "string", "url": "string" }, "hint": "Client logos or professional association memberships (AICPA, state CPA society, etc.)" }
-          }
-        },
         { "name": "feature-sections", "optional": false,
           "fields": {
             "heading": { "type": "string", "hint": "e.g. 'Our Services' or 'What We Do'" },
@@ -147,18 +141,6 @@
           "fields": {
             "heading": { "type": "string", "hint": "e.g. 'Service Packages' or 'Pricing Plans'" },
             "plans": { "type": "array", "items": { "name": "string", "price": "string", "description": "string", "features": "array" }, "hint": "Skip if no pricing info found" }
-          }
-        },
-        { "name": "bento-grids", "optional": true,
-          "fields": {
-            "heading": { "type": "string", "hint": "e.g. 'Why Choose Us' or 'Our Process'" },
-            "items": { "type": "array", "items": { "title": "string", "description": "string", "icon": "string" } }
-          }
-        },
-        { "name": "faq-sections", "optional": true,
-          "fields": {
-            "heading": { "type": "string", "hint": "e.g. 'Frequently Asked Questions'" },
-            "faqs": { "type": "array", "items": { "question": "string", "answer": "string" } }
           }
         },
         { "name": "cta-sections-02", "optional": false,

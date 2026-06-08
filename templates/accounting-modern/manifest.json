@@ -48,12 +48,6 @@
             "cta_secondary_label": { "type": "string" }
           }
         },
-        { "name": "logo-clouds-02", "optional": true,
-          "fields": {
-            "heading": { "type": "string", "hint": "e.g. 'Trusted by Industry Leaders'" },
-            "logos": { "type": "array", "items": { "name": "string", "url": "string" } }
-          }
-        },
         { "name": "feature-sections", "optional": false,
           "fields": {
             "heading": { "type": "string", "hint": "e.g. 'How We Help You Grow'" },
@@ -121,12 +115,6 @@
           "fields": {
             "heading": { "type": "string", "hint": "e.g. 'Our Team' or 'Meet the Partners'" },
             "members": { "type": "array", "items": { "name": "string", "role": "string", "bio": "string", "image_url": "string" } }
-          }
-        },
-        { "name": "bento-grids", "optional": true,
-          "fields": {
-            "heading": { "type": "string", "hint": "e.g. 'Our Values' or 'What Sets Us Apart'" },
-            "items": { "type": "array", "items": { "title": "string", "description": "string" } }
           }
         },
         { "name": "blog-sections-02", "optional": true,
