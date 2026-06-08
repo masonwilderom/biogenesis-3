@@ -1,21 +1,15 @@
 import { join } from "node:path"
 import { existsSync } from "node:fs"
+import { readdir, readFile } from "node:fs/promises"
 import { init, commitAll } from "../git/ops"
 import { createProvider } from "../llm/provider"
 import { crawl } from "../scraper/crawler"
 import { summarize } from "../scraper/summarizer"
-import { discoverTemplates, matchTemplate, pickRandomTemplate } from "../templates/registry"
-import { scaffoldSite } from "../templates/resolver"
-import { installBlocks } from "../templates/block-installer"
-import { buildPage, writeDataFiles } from "../templates/page-builder"
+import { discoverTemplates, pickRandomTemplate } from "../templates/registry"
+import { copyTemplate } from "../templates/resolver"
 import { build } from "../pipeline/build"
 import { deploy } from "../pipeline/deploy"
-import {
-  GENERATE_SYSTEM_PROMPT,
-  buildGenerateUserMessage,
-  CLASSIFY_BUSINESS_TYPE_PROMPT,
-  buildClassifyBusinessTypeMessage,
-} from "../llm/prompts"
+import { GENERATE_SYSTEM_PROMPT, buildGenerateUserMessage } from "../llm/prompts"
 
 function slugify(url: string): string {
   try {
@@ -24,6 +18,35 @@ function slugify(url: string): string {
   } catch {
     throw new Error(`Invalid URL: "${url}"`)
   }
+}
+
+async function readAllSourceFiles(dir: string): Promise<Record<string, string>> {
+  const files: Record<string, string> = {}
+
+  async function walk(currentDir: string) {
+    const entries = await readdir(currentDir, { withFileTypes: true })
+    for (const entry of entries) {
+      const fullPath = join(currentDir, entry.name)
+      if (entry.isDirectory()) {
+        if (entry.name === "node_modules" || entry.name === ".git" || entry.name === "dist") continue
+        await walk(fullPath)
+      } else if (
+        entry.name.endsWith(".astro") ||
+        entry.name.endsWith(".tsx") ||
+        entry.name.endsWith(".ts") ||
+        entry.name.endsWith(".js") ||
+        entry.name.endsWith(".mjs") ||
+        entry.name.endsWith(".css") ||
+        entry.name.endsWith(".json")
+      ) {
+        const relPath = fullPath.replace(dir, "").replace(/^\//, "")
+        files[relPath] = await readFile(fullPath, "utf-8")
+      }
+    }
+  }
+
+  await walk(join(dir, "src"))
+  return files
 }
 
 export async function generate(url: string, templateName?: string, customSlug?: string): Promise<void> {
@@ -58,86 +81,54 @@ export async function generate(url: string, templateName?: string, customSlug?: 
     template = templates.find((t) => t.name === templateName)
     if (!template) throw new Error(`Template "${templateName}" not found`)
   } else {
-    console.log("  Classifying business type...")
-    const classifyResponse = await provider.generate(
-      CLASSIFY_BUSINESS_TYPE_PROMPT,
-      buildClassifyBusinessTypeMessage(
-        businessData.business_name,
-        businessData.description,
-        businessData.sections.map((s) => s.type)
-      )
-    )
-    const businessType = classifyResponse.trim().toLowerCase().replace(/[^a-z-]/g, "")
-    console.log(`  Business type: ${businessType}`)
-
-    const matches = matchTemplate(templates, businessType)
-    template = pickRandomTemplate(matches.length > 0 ? matches : templates)
+    template = pickRandomTemplate(templates)
   }
 
-  const manifest = template.manifest
-  const pageCount = manifest.pages.length
-  const globalCount = manifest.global?.length || 0
-  console.log(`  Using template: ${manifest.name} (${pageCount} pages, ${globalCount} global)`)
+  console.log(`  Using template: ${template.name}`)
 
-  // 3. Scaffold site
-  console.log("  Scaffolding site...")
-  await scaffoldSite(siteDir)
+  // 3. Copy template
+  await copyTemplate(template.path, siteDir)
 
-  // 4. Install global blocks
-  if (manifest.global && manifest.global.length > 0) {
-    console.log("  Installing global blocks...")
-    await installBlocks(siteDir, manifest.global, manifest.source)
-  }
+  // 4. Read source files
+  console.log("  Reading site files...")
+  const sourceFiles = await readAllSourceFiles(siteDir)
 
-  // 5. Install ALL page blocks upfront (so deps are resolved)
-  const allPageBlocks = manifest.pages.flatMap((p) => p.blocks)
-  const uniqueBlocks = allPageBlocks.filter(
-    (b, i, arr) => arr.findIndex((x) => x.name === b.name) === i
-  )
-  console.log("  Installing page blocks...")
-  await installBlocks(siteDir, uniqueBlocks, manifest.source)
-
-  // 6. LLM fills content data
-  console.log("  Generating block content data with LLM...")
-  const userMessage = buildGenerateUserMessage(manifest, businessData)
+  // 5. LLM fills content
+  console.log("  Filling content with business data...")
+  const userMessage = buildGenerateUserMessage(sourceFiles, businessData)
   const llmResponse = await provider.generate(GENERATE_SYSTEM_PROMPT, userMessage)
 
-  let data: Record<string, unknown | null>
+  let fileMap: Record<string, string>
   try {
     let json = llmResponse
     const mdMatch = json.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (mdMatch) {
-      json = mdMatch[1].trim()
-    }
+    if (mdMatch) json = mdMatch[1].trim()
     const jsonStart = json.indexOf("{")
     const jsonEnd = json.lastIndexOf("}") + 1
-    data = JSON.parse(json.slice(jsonStart, jsonEnd))
+    fileMap = JSON.parse(json.slice(jsonStart, jsonEnd))
   } catch (err) {
     const preview = llmResponse.slice(0, 500)
-    const parseErr = err instanceof SyntaxError ? err.message : String(err)
-    throw new Error(`LLM returned malformed response — unable to parse data JSON: ${parseErr}\nResponse preview: ${preview}...`)
+    throw new Error(`LLM returned malformed response: ${(err as Error).message}\nPreview: ${preview}...`)
   }
 
-  // 7. Write data files
-  console.log("  Writing content data files...")
-  await writeDataFiles(siteDir, data)
-
-  // 8. Build each page
-  for (const page of manifest.pages) {
-    const pageData: Record<string, unknown | null> = {}
-    for (const block of page.blocks) {
-      pageData[block.name] = data[block.name] !== undefined ? data[block.name] : null
-    }
-    console.log(`  Building page: ${page.route}`)
-    await buildPage(siteDir, page, pageData, manifest)
+  // 6. Write files
+  console.log("  Writing modified files...")
+  for (const [filePath, content] of Object.entries(fileMap)) {
+    const fullPath = join(siteDir, filePath)
+    await Bun.write(fullPath, content)
   }
 
-  // 9. Git init & commit
+  // 7. Install deps
+  console.log("  Installing dependencies...")
+  const { $ } = await import("bun")
+  await $`bun install`.cwd(siteDir).quiet()
+
+  // 8. Git init & commit
   console.log("  Initializing git repo...")
   await init(siteDir)
   await commitAll(siteDir, "Initial site generated from template")
 
-  // 11. Build & deploy
+  // 9. Build & deploy
   console.log("  Building...")
   await build(siteDir)
 

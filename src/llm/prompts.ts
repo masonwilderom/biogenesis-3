@@ -1,39 +1,36 @@
 // =====================
-// Generate (data-driven — LLM outputs content data only)
+// Generate
 // =====================
 
-export const GENERATE_SYSTEM_PROMPT = `You are a website content writer. You will receive:
-1. A template manifest listing blocks and their customizable fields
+export const GENERATE_SYSTEM_PROMPT = `You are a website content editor. You will receive:
+1. The source code of every file in a website (Astro + React + Tailwind)
 2. Structured business data extracted from a scraped website
 
-Your task: Generate content data for every block in the manifest.
+Your task: Replace hardcoded placeholder text in the source files with real business data.
 
 Rules:
-- Include EVERY block from the manifest
-- For required blocks (optional:false): fill with real business data
-- For optional blocks (optional:true): fill with real data if the business has relevant content; set to null if no relevant content exists
-- Match the field names from the manifest exactly
-- Use the business data faithfully — do not invent new content
-- For text fields: write natural, professional copy appropriate for a business website
-- For array fields: create 2-6 items based on available data
-- Never invent fake testimonials, fake client names, or fake statistics
-- Respond ONLY with valid JSON. No markdown, no explanation, no code fences.
+- Look at each file's content to understand what text is placeholder vs structural
+- Replace business names, taglines, headings, paragraphs, button labels, testimonials, contact info, stats, pricing, team member names/bios with data from the scraped business
+- Replace placeholder image src URLs with actual image URLs from the business data when available
+- Keep all HTML/JSX structure, imports, classNames, and functional code intact
+- Only modify text content and URLs
+- Return ONLY the files you modified as a JSON object
+- Respond ONLY with valid JSON. No markdown, no explanation. No code fences.
 
-Response format:
+Format:
 {
-  "block-name-1": { "field_name": "value", ... },
-  "block-name-2": null,
-  ...
+  "src/components/Hero.astro": "<full modified file content>",
+  "src/pages/index.astro": "<full modified file content>"
 }`
 
 export function buildGenerateUserMessage(
-  manifest: object,
+  sourceFiles: Record<string, string>,
   businessData: object
 ): string {
   return JSON.stringify({
-    manifest,
+    source_files: sourceFiles,
     business_data: businessData,
-    instruction: "Generate content data for each block. Return a JSON object keyed by block name.",
+    instruction: "Replace placeholder content with real business data. Return ONLY modified files as JSON.",
   }, null, 2)
 }
 
@@ -76,7 +73,7 @@ export function buildClassifyBusinessTypeMessage(
 }
 
 // =====================
-// Summarize (unchanged)
+// Summarize
 // =====================
 
 export const SUMMARIZE_PROMPT = `You are a content extractor. Given the raw text content of a scraped website, extract structured business data.

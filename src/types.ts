@@ -33,39 +33,9 @@ export interface StructuredData {
   social_links: { platform: string; url: string }[]
 }
 
-export interface BlockFieldSchema {
-  type: "string" | "array"
-  hint?: string
-  items?: Record<string, string>
-}
-
-export interface BlockManifestEntry {
-  name: string
-  optional: boolean
-  fields: Record<string, BlockFieldSchema>
-}
-
-export interface PageDefinition {
-  route: string
-  title: string
-  blocks: BlockManifestEntry[]
-}
-
-export interface TemplateManifest {
-  name: string
-  description: string
-  source: string
-  types: string[]
-  global?: BlockManifestEntry[]
-  pages: PageDefinition[]
-}
-
-export type ContentPayload = Record<string, Record<string, unknown> | null>
-
 export interface Template {
   name: string
   path: string
-  manifest: TemplateManifest
 }
 
 export const STAGING_BRANCH = "staging"

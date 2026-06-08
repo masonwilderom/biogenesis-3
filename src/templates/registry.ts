@@ -1,6 +1,6 @@
-import { readdir } from "node:fs/promises"
+import { readdir, stat } from "node:fs/promises"
 import { join } from "node:path"
-import type { Template, TemplateManifest } from "../types"
+import type { Template } from "../types"
 
 export async function discoverTemplates(
   templatesRoot: string
@@ -14,17 +14,16 @@ export async function discoverTemplates(
       if (!entry.isDirectory()) continue
 
       const templateDir = join(templatesRoot, entry.name)
-      const manifestPath = join(templateDir, "manifest.json")
+      const pkgPath = join(templateDir, "package.json")
 
       try {
-        const manifestContent = await Bun.file(manifestPath).text()
-        const manifest = JSON.parse(manifestContent) as TemplateManifest
-
-        templates.push({
-          name: entry.name,
-          path: templateDir,
-          manifest,
-        })
+        const pkgStat = await stat(pkgPath)
+        if (pkgStat.isFile()) {
+          templates.push({
+            name: entry.name,
+            path: templateDir,
+          })
+        }
       } catch {
         continue
       }
@@ -34,23 +33,6 @@ export async function discoverTemplates(
   }
 
   return templates
-}
-
-export function matchTemplate(
-  templates: Template[],
-  businessType: string
-): Template[] {
-  const directMatches = templates.filter((t) =>
-    t.manifest.types.includes(businessType)
-  )
-
-  if (directMatches.length > 0) return directMatches
-
-  const wildcardMatches = templates.filter((t) =>
-    t.manifest.types.includes("*")
-  )
-
-  return wildcardMatches
 }
 
 export function pickRandomTemplate(templates: Template[]): Template {
