@@ -4,12 +4,18 @@ import { init, commitAll } from "../git/ops"
 import { createProvider } from "../llm/provider"
 import { crawl } from "../scraper/crawler"
 import { summarize } from "../scraper/summarizer"
-import { discoverTemplates, pickRandomTemplate } from "../templates/registry"
-import { copyTemplate } from "../templates/resolver"
+import { discoverTemplates, matchTemplate, pickRandomTemplate } from "../templates/registry"
+import { scaffoldSite } from "../templates/resolver"
+import { installBlocks } from "../templates/block-installer"
+import { buildPage, readBlockFiles, writeBlockFiles } from "../templates/page-builder"
 import { build } from "../pipeline/build"
 import { deploy } from "../pipeline/deploy"
-import { GENERATE_SYSTEM_PROMPT, buildGenerateUserMessage } from "../llm/prompts"
-import type { LLMProvider } from "../llm/provider"
+import {
+  GENERATE_SYSTEM_PROMPT,
+  buildGenerateUserMessage,
+  CLASSIFY_BUSINESS_TYPE_PROMPT,
+  buildClassifyBusinessTypeMessage,
+} from "../llm/prompts"
 
 function slugify(url: string): string {
   try {
@@ -17,32 +23,6 @@ function slugify(url: string): string {
     return parsed.hostname.replace(/\./g, "-")
   } catch {
     throw new Error(`Invalid URL: "${url}"`)
-  }
-}
-
-async function fillTemplate(
-  siteDir: string,
-  provider: LLMProvider,
-  slots: { name: string; marker: string }[],
-  businessData: object
-): Promise<void> {
-  console.log("  Filling template slots with business data...")
-  const userMessage = buildGenerateUserMessage(slots, businessData)
-  const response = await provider.generate(GENERATE_SYSTEM_PROMPT, userMessage)
-
-  let fileMap: Record<string, string>
-  try {
-    const jsonStart = response.indexOf("{")
-    const jsonEnd = response.lastIndexOf("}") + 1
-    fileMap = JSON.parse(response.slice(jsonStart, jsonEnd))
-  } catch {
-    throw new Error("LLM returned malformed response — unable to parse file map")
-  }
-
-  for (const [filePath, content] of Object.entries(fileMap)) {
-    const fullPath = join(siteDir, filePath)
-    await Bun.write(fullPath, content)
-    console.log(`    Wrote ${filePath}`)
   }
 }
 
@@ -56,6 +36,16 @@ export async function generate(url: string, templateName?: string): Promise<void
 
   console.log(`\n=== Generate: ${url} -> ${slug} ===\n`)
 
+  // 1. Scrape
+  console.log("  Crawling source website...")
+  const crawlResult = await crawl(url)
+
+  const provider = await createProvider()
+
+  console.log("  Summarizing crawl data...")
+  const businessData = await summarize(crawlResult, provider)
+
+  // 2. Template selection
   const templatesRoot = join(process.cwd(), "templates")
   const templates = await discoverTemplates(templatesRoot)
 
@@ -68,27 +58,73 @@ export async function generate(url: string, templateName?: string): Promise<void
     template = templates.find((t) => t.name === templateName)
     if (!template) throw new Error(`Template "${templateName}" not found`)
   } else {
-    template = pickRandomTemplate(templates)
+    // Classify business type for auto-selection
+    console.log("  Classifying business type...")
+    const classifyResponse = await provider.generate(
+      CLASSIFY_BUSINESS_TYPE_PROMPT,
+      buildClassifyBusinessTypeMessage(
+        businessData.business_name,
+        businessData.description,
+        businessData.sections.map((s) => s.type)
+      )
+    )
+    const businessType = classifyResponse.trim().toLowerCase().replace(/[^a-z-]/g, "")
+    console.log(`  Business type: ${businessType}`)
+
+    const matches = matchTemplate(templates, businessType)
+    template = pickRandomTemplate(matches.length > 0 ? matches : templates)
   }
-  console.log(`  Using template: ${template.name} (${template.slots.length} slots)`)
 
-  console.log("  Crawling source website...")
-  const crawlResult = await crawl(url)
+  console.log(`  Using template: ${template.manifest.name} (${template.manifest.blocks.length} blocks)`)
 
-  const provider = await createProvider()
+  // 3. Scaffold site
+  console.log("  Scaffolding site...")
+  await scaffoldSite(siteDir)
 
-  console.log("  Summarizing crawl data...")
-  const businessData = await summarize(crawlResult, provider)
+  // 4. Install blocks from manifest
+  await installBlocks(siteDir, template.manifest.blocks)
 
-  console.log("  Copying template...")
-  await copyTemplate(template, siteDir)
+  // 5. Read installed block files for LLM
+  console.log("  Reading installed block files...")
+  const blockFiles = await readBlockFiles(siteDir)
 
-  await fillTemplate(siteDir, provider, template.slots, businessData)
+  // 6. LLM fills content
+  console.log("  Filling block content with business data...")
+  const userMessage = buildGenerateUserMessage(
+    template.manifest,
+    blockFiles,
+    businessData
+  )
+  const llmResponse = await provider.generate(GENERATE_SYSTEM_PROMPT, userMessage)
 
+  let fileMap: Record<string, string>
+  try {
+    const jsonStart = llmResponse.indexOf("{")
+    const jsonEnd = llmResponse.lastIndexOf("}") + 1
+    fileMap = JSON.parse(llmResponse.slice(jsonStart, jsonEnd))
+  } catch {
+    throw new Error("LLM returned malformed response — unable to parse file map")
+  }
+
+  // 7. Write modified files and build page
+  console.log("  Writing modified block files...")
+  await writeBlockFiles(siteDir, fileMap)
+
+  const content: Record<string, unknown | null> = {}
+  for (const block of template.manifest.blocks) {
+    const wasModified = Object.keys(fileMap).some((path) =>
+      path.includes(`/${block.name}`)
+    )
+    content[block.name] = wasModified ? { activated: true } : null
+  }
+  await buildPage(siteDir, template.manifest, content as Record<string, Record<string, unknown> | null>)
+
+  // 8. Git init & commit
   console.log("  Initializing git repo...")
   await init(siteDir)
   await commitAll(siteDir, "Initial site generated from template")
 
+  // 9. Build & deploy
   console.log("  Building...")
   await build(siteDir)
 
