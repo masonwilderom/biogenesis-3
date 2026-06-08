@@ -1,5 +1,6 @@
 import { $ } from "bun"
 import { existsSync } from "node:fs"
+import { join } from "node:path"
 
 export async function scaffoldSite(siteDir: string): Promise<void> {
   if (existsSync(siteDir)) {
@@ -26,7 +27,25 @@ export async function scaffoldSite(siteDir: string): Promise<void> {
     throw new Error(`Failed to add Tailwind:\n${tailwindAdd.stderr.toString()}`)
   }
 
-  // Step 4: Initialize shadcn
+  // Step 4: Configure path aliases for shadcn (required before shadcn init)
+  const tsconfigPath = join(siteDir, "tsconfig.json")
+  const pkgPath = join(siteDir, "package.json")
+  try {
+    const tsconfig = JSON.parse(await Bun.file(tsconfigPath).text())
+    tsconfig.compilerOptions = tsconfig.compilerOptions || {}
+    tsconfig.compilerOptions.paths = { "@/*": ["./src/*"] }
+    tsconfig.compilerOptions.baseUrl = "."
+    await Bun.write(tsconfigPath, JSON.stringify(tsconfig, null, 2))
+    
+    const pkg = JSON.parse(await Bun.file(pkgPath).text())
+    pkg.imports = pkg.imports || {}
+    pkg.imports["@/*"] = "./src/*"
+    await Bun.write(pkgPath, JSON.stringify(pkg, null, 2))
+  } catch (err) {
+    throw new Error(`Failed to configure import aliases:\n${(err as Error).message}`)
+  }
+
+  // Step 5: Initialize shadcn
   const shadcnInit = await $`npx shadcn@latest init --defaults --yes`.cwd(siteDir).nothrow()
   if (shadcnInit.exitCode !== 0) {
     throw new Error(`Failed to init shadcn:\n${shadcnInit.stderr.toString()}`)

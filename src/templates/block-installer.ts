@@ -5,17 +5,18 @@ export async function installBlock(
   siteDir: string,
   blockName: string,
   source: string
-): Promise<void> {
+): Promise<boolean> {
   const fullName = `${source}/${blockName}`
   console.log(`    Installing block: ${fullName}`)
 
-  const result = await $`npx shadcn@latest add ${fullName} --yes --overwrite`.cwd(siteDir).nothrow()
+  const result = await $`npx shadcn@latest add ${fullName} --yes`.cwd(siteDir).nothrow()
 
   if (result.exitCode !== 0) {
     const err = result.stderr.toString()
-    console.warn(`    [warn] Could not install "${fullName}":\n${err}`)
-    throw new Error(`Failed to install block "${fullName}"`)
+    console.warn(`    [warn] Could not install "${fullName}" — skipping`)
+    return false
   }
+  return true
 }
 
 export async function installBlocks(
@@ -31,9 +32,11 @@ export async function installBlocks(
     console.warn(`    [warn] Could not register ${source} (may already be registered)`)
   }
 
+  let installed = 0
   for (const block of blocks) {
-    await installBlock(siteDir, block.name, source)
+    const ok = await installBlock(siteDir, block.name, source)
+    if (ok) installed++
   }
 
-  console.log(`  ${blocks.length} blocks installed.`)
+  console.log(`  ${installed}/${blocks.length} blocks installed.`)
 }
