@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import { cp, readdir, mkdir } from "node:fs/promises"
+import { mkdir, readFile } from "node:fs/promises"
 import type { BlockManifestEntry } from "../types"
 
 export async function installBlock(
@@ -10,23 +10,26 @@ export async function installBlock(
   console.log(`    Installing block: ${blockName}`)
 
   const blockDir = join(process.cwd(), "templates/blocks", source, blockName)
-  const destDir = join(siteDir, "src/components/ui")
+  const registryPath = join(blockDir, "registry.json")
+  
+  let registry: any
+  try {
+    registry = JSON.parse(await readFile(registryPath, "utf-8"))
+  } catch {
+    throw new Error(`Block "${blockName}" not found in ${source} registry`)
+  }
 
-  async function copyFiles(src: string, dest: string) {
-    await mkdir(dest, { recursive: true })
-    const entries = await readdir(src, { withFileTypes: true })
-    for (const entry of entries) {
-      const srcPath = join(src, entry.name)
-      const destPath = join(dest, entry.name)
-      if (entry.isDirectory()) {
-        await copyFiles(srcPath, destPath)
-      } else if (entry.name !== "meta.json") {
-        await cp(srcPath, destPath)
+  if (registry.files) {
+    for (const file of registry.files) {
+      if (file.target && file.content) {
+        const destPath = join(siteDir, "src", file.target)
+        await mkdir(join(destPath, ".."), { recursive: true })
+        await Bun.write(destPath, file.content)
       }
     }
   }
 
-  await copyFiles(join(blockDir, "src", "components", "ui"), destDir)
+  console.log(`      Installed to src/${registry.files?.[0]?.target || "components/"}`)
 }
 
 export async function installBlocks(

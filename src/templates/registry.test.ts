@@ -9,7 +9,7 @@ const TEMP_DIR = join(import.meta.dirname, "../../test-tmp-manifests")
 const restaurantManifest: TemplateManifest = {
   name: "restaurant-one",
   description: "Restaurants and food businesses",
-  source: "prebuiltui",
+  source: "bundui",
   types: ["restaurant", "cafe", "bakery"],
   blocks: [
     { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
@@ -20,7 +20,7 @@ const restaurantManifest: TemplateManifest = {
 const genericManifest: TemplateManifest = {
   name: "generic-one",
   description: "Generic fallback",
-  source: "prebuiltui",
+  source: "bundui",
   types: ["*"],
   blocks: [
     { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },

@@ -9,7 +9,7 @@ const TEMP_SITE = join(import.meta.dirname, "../../test-tmp-page-builder")
 const manifest: TemplateManifest = {
   name: "test-template",
   description: "test",
-  source: "prebuiltui",
+  source: "bundui",
   types: ["*"],
   blocks: [
     { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
