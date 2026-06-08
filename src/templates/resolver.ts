@@ -1,36 +1,36 @@
-import { copyFile, mkdir, readdir } from "node:fs/promises"
-import { join } from "node:path"
+import { $ } from "bun"
 import { existsSync } from "node:fs"
-import type { Template } from "../types"
 
-export async function copyTemplate(
-  template: Template,
-  destDir: string
-): Promise<void> {
-  if (existsSync(destDir)) {
-    const entries = await readdir(destDir)
-    if (entries.length > 0) {
-      throw new Error(`Destination "${destDir}" already exists and is not empty`)
-    }
+export async function scaffoldSite(siteDir: string): Promise<void> {
+  if (existsSync(siteDir)) {
+    throw new Error(`Site directory already exists: ${siteDir}`)
   }
 
-  await copyDir(template.path, destDir)
-}
+  console.log("  Scaffolding Astro project...")
 
-async function copyDir(src: string, dest: string): Promise<void> {
-  await mkdir(dest, { recursive: true })
-
-  const entries = await readdir(src, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const srcPath = join(src, entry.name)
-    const destPath = join(dest, entry.name)
-
-    if (entry.isDirectory()) {
-      if (entry.name === "node_modules") continue
-      await copyDir(srcPath, destPath)
-    } else {
-      await copyFile(srcPath, destPath)
-    }
+  // Step 1: Create Astro project (skip interactive prompts)
+  const create = await $`bun create astro@latest ${siteDir} -- --template minimal --skip-houston --no-install`.nothrow()
+  if (create.exitCode !== 0) {
+    throw new Error(`Failed to create Astro project:\n${create.stderr.toString()}`)
   }
+
+  // Step 2: Add React integration
+  const reactAdd = await $`bun astro add react --yes`.cwd(siteDir).nothrow()
+  if (reactAdd.exitCode !== 0) {
+    throw new Error(`Failed to add React:\n${reactAdd.stderr.toString()}`)
+  }
+
+  // Step 3: Add Tailwind integration
+  const tailwindAdd = await $`bun astro add tailwind --yes`.cwd(siteDir).nothrow()
+  if (tailwindAdd.exitCode !== 0) {
+    throw new Error(`Failed to add Tailwind:\n${tailwindAdd.stderr.toString()}`)
+  }
+
+  // Step 4: Initialize shadcn
+  const shadcnInit = await $`npx shadcn@latest init --defaults --yes`.cwd(siteDir).nothrow()
+  if (shadcnInit.exitCode !== 0) {
+    throw new Error(`Failed to init shadcn:\n${shadcnInit.stderr.toString()}`)
+  }
+
+  console.log("  Scaffold complete.")
 }
