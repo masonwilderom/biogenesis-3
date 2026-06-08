@@ -7,7 +7,7 @@ import { summarize } from "../scraper/summarizer"
 import { discoverTemplates, matchTemplate, pickRandomTemplate } from "../templates/registry"
 import { scaffoldSite } from "../templates/resolver"
 import { installBlocks } from "../templates/block-installer"
-import { buildPage, readBlockFiles, writeBlockFiles, writeDataFiles } from "../templates/page-builder"
+import { buildPage, writeDataFiles } from "../templates/page-builder"
 import { build } from "../pipeline/build"
 import { deploy } from "../pipeline/deploy"
 import {
@@ -97,20 +97,13 @@ export async function generate(url: string, templateName?: string, customSlug?: 
   console.log("  Installing page blocks...")
   await installBlocks(siteDir, uniqueBlocks, manifest.source)
 
-  // 6. Read all installed files once
-  console.log("  Reading installed block files...")
-  const blockFiles = await readBlockFiles(siteDir)
-
-  // 7. LLM fills content for ALL blocks at once
-  console.log("  Filling block content with business data...")
-  const allBlocks = [...(manifest.global || []), ...allPageBlocks]
-  const userMessage = buildGenerateUserMessage(manifest, blockFiles, businessData)
+  // 6. LLM fills content data
+  console.log("  Generating block content data with LLM...")
+  const userMessage = buildGenerateUserMessage(manifest, businessData)
   const llmResponse = await provider.generate(GENERATE_SYSTEM_PROMPT, userMessage)
 
-  let files: Record<string, string>
   let data: Record<string, unknown | null>
   try {
-    // Handle markdown-wrapped JSON (```json ... ```)
     let json = llmResponse
     const mdMatch = json.match(/```(?:json)?\s*([\s\S]*?)```/)
     if (mdMatch) {
@@ -118,21 +111,18 @@ export async function generate(url: string, templateName?: string, customSlug?: 
     }
     const jsonStart = json.indexOf("{")
     const jsonEnd = json.lastIndexOf("}") + 1
-    const parsed = JSON.parse(json.slice(jsonStart, jsonEnd))
-    files = parsed.files || {}
-    data = parsed.data || {}
-  } catch {
-    throw new Error("LLM returned malformed response — unable to parse { files, data }")
+    data = JSON.parse(json.slice(jsonStart, jsonEnd))
+  } catch (err) {
+    const preview = llmResponse.slice(0, 500)
+    const parseErr = err instanceof SyntaxError ? err.message : String(err)
+    throw new Error(`LLM returned malformed response — unable to parse data JSON: ${parseErr}\nResponse preview: ${preview}...`)
   }
 
-  // 8. Write modified files
-  console.log("  Writing modified block files...")
-  await writeBlockFiles(siteDir, files)
-
+  // 7. Write data files
   console.log("  Writing content data files...")
   await writeDataFiles(siteDir, data)
 
-  // 9. Build each page
+  // 8. Build each page
   for (const page of manifest.pages) {
     const pageData: Record<string, unknown | null> = {}
     for (const block of page.blocks) {
@@ -142,7 +132,7 @@ export async function generate(url: string, templateName?: string, customSlug?: 
     await buildPage(siteDir, page, pageData, manifest)
   }
 
-  // 10. Git init & commit
+  // 9. Git init & commit
   console.log("  Initializing git repo...")
   await init(siteDir)
   await commitAll(siteDir, "Initial site generated from template")

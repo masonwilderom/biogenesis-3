@@ -39,8 +39,6 @@ beforeAll(() => {
   rmSync(TEMP_SITE, { recursive: true, force: true })
   mkdirSync(join(TEMP_SITE, "src", "pages"), { recursive: true })
   mkdirSync(join(TEMP_SITE, "src", "components", "ui"), { recursive: true })
-  mkdirSync(join(TEMP_SITE, "src", "layouts"), { recursive: true })
-  writeFileSync(join(TEMP_SITE, "src", "layouts", "Layout.astro"), "---\n---\n<html><body><slot /></body></html>")
   for (const [path, content] of Object.entries(filledFiles)) {
     mkdirSync(join(TEMP_SITE, path, ".."), { recursive: true })
     writeFileSync(join(TEMP_SITE, path), content)

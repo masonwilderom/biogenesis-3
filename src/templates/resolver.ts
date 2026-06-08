@@ -51,5 +51,29 @@ export async function scaffoldSite(siteDir: string): Promise<void> {
     throw new Error(`Failed to init shadcn:\n${shadcnInit.stderr.toString()}`)
   }
 
+  // Step 6: Add @/ path alias to Astro/Vite config
+  try {
+    const configPath = join(siteDir, "astro.config.mjs")
+    let config = await Bun.file(configPath).text()
+    if (!config.includes("resolve:")) {
+      const aliasBlock = `
+import path from "path"
+import { fileURLToPath } from "url"
+const __dirname = path.dirname(fileURLToPath(import.meta.url))`
+      // Insert after the last import
+      const lastImportIdx = config.lastIndexOf("import ")
+      const afterLastImport = config.indexOf("\n", config.indexOf("\n", lastImportIdx)) + 1
+      config = config.slice(0, afterLastImport) + aliasBlock + "\n" + config.slice(afterLastImport)
+      config = config.replace(
+        "plugins: [tailwindcss()]",
+        `plugins: [tailwindcss()],
+    resolve: { alias: { "@": path.resolve(__dirname, "src") } }`
+      )
+      await Bun.write(configPath, config)
+    }
+  } catch (err) {
+    console.warn(`    [warn] Could not add alias to astro config: ${(err as Error).message}`)
+  }
+
   console.log("  Scaffold complete.")
 }

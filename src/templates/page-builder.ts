@@ -99,13 +99,10 @@ export async function buildPage(
   })
 
   const pageContent = `---
-import Layout from "../layouts/Layout.astro"
 ${imports.join("\n")}
 ---
 
-<Layout>
 ${components.join("\n")}
-</Layout>
 `
 
   // Determine file path from route
