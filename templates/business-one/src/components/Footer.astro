@@ -1,0 +1,50 @@
+---
+// {{SLOT:footer}}
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>{{SLOT:footer_business_name}}</h3>
+        <p>{{SLOT:footer_tagline}}</p>
+      </div>
+      <div class="footer-contact">
+        <h4>Contact</h4>
+        <p>{{SLOT:footer_email}}</p>
+        <p>{{SLOT:footer_phone}}</p>
+        <p>{{SLOT:footer_address}}</p>
+      </div>
+      <div class="footer-social">
+        <h4>Follow Us</h4>
+        {{SLOT:footer_social}}
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding: 4rem 2rem;
+    background: var(--bg-dark, #1f2937);
+    color: var(--text-light, #e5e7eb);
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+  }
+  h3, h4 {
+    color: #fff;
+    margin-bottom: 0.75rem;
+  }
+  p {
+    opacity: 0.8;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+  }
+</style>
