@@ -1,10 +1,11 @@
 {
   "name": "business-one",
-  "description": "General-purpose small business landing page. Works for most local businesses.",
+  "description": "General-purpose small business landing page. Works for most local businesses. Blocks sourced from 21st.dev community registry.",
   "types": ["*"],
   "blocks": [
     {
       "name": "hero-01",
+      "registry_url": "https://21st.dev/r/magicui/hero-section",
       "optional": false,
       "fields": {
         "heading": { "type": "string", "hint": "Main value proposition, keep under 60 characters" },
@@ -16,6 +17,7 @@
     },
     {
       "name": "feature-section-01",
+      "registry_url": "https://21st.dev/r/magicui/feature-section",
       "optional": false,
       "fields": {
         "heading": { "type": "string", "hint": "Section heading, e.g. 'What We Offer'" },
@@ -29,6 +31,7 @@
     },
     {
       "name": "cta-01",
+      "registry_url": "https://21st.dev/r/magicui/call-to-action",
       "optional": false,
       "fields": {
         "heading": { "type": "string", "hint": "CTA heading, e.g. 'Ready to Get Started?'" },
@@ -39,6 +42,7 @@
     },
     {
       "name": "testimonial-01",
+      "registry_url": "https://21st.dev/r/magicui/testimonials",
       "optional": true,
       "fields": {
         "heading": { "type": "string", "hint": "Section heading" },
@@ -51,6 +55,7 @@
     },
     {
       "name": "footer-01",
+      "registry_url": "https://21st.dev/r/magicui/footer",
       "optional": false,
       "fields": {
         "business_name": { "type": "string" },

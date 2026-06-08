@@ -41,6 +41,7 @@ export interface BlockFieldSchema {
 
 export interface BlockManifestEntry {
   name: string
+  registry_url: string
   optional: boolean
   fields: Record<string, BlockFieldSchema>
 }

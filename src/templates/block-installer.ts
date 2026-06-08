@@ -3,11 +3,12 @@ import type { BlockManifestEntry } from "../types"
 
 export async function installBlock(
   siteDir: string,
-  blockName: string
+  blockName: string,
+  registryUrl: string
 ): Promise<void> {
-  console.log(`    Installing block: ${blockName}`)
+  console.log(`    Installing block: ${blockName} (${registryUrl})`)
 
-  const result = await $`npx shadcn@latest add ${blockName} --yes --overwrite`.cwd(siteDir).nothrow()
+  const result = await $`npx shadcn@latest add ${registryUrl} --yes --overwrite`.cwd(siteDir).nothrow()
 
   if (result.exitCode !== 0) {
     console.warn(`    [warn] Could not install block "${blockName}":\n${result.stderr.toString()}`)
@@ -22,7 +23,7 @@ export async function installBlocks(
   console.log("  Installing shadcn blocks...")
 
   for (const block of blocks) {
-    await installBlock(siteDir, block.name)
+    await installBlock(siteDir, block.name, block.registry_url)
   }
 
   console.log(`  ${blocks.length} blocks installed.`)

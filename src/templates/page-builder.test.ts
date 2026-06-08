@@ -11,9 +11,9 @@ const manifest: TemplateManifest = {
   description: "test",
   types: ["*"],
   blocks: [
-    { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
-    { name: "testimonial-01", optional: true, fields: { heading: { type: "string" } } },
-    { name: "footer-01", optional: false, fields: { business_name: { type: "string" } } },
+    { name: "hero-01", registry_url: "https://21st.dev/r/test/hero-01", optional: false, fields: { heading: { type: "string" } } },
+    { name: "testimonial-01", registry_url: "https://21st.dev/r/test/testimonial-01", optional: true, fields: { heading: { type: "string" } } },
+    { name: "footer-01", registry_url: "https://21st.dev/r/test/footer-01", optional: false, fields: { business_name: { type: "string" } } },
   ],
 }
 
