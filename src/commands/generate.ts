@@ -7,7 +7,7 @@ import { summarize } from "../scraper/summarizer"
 import { discoverTemplates, matchTemplate, pickRandomTemplate } from "../templates/registry"
 import { scaffoldSite } from "../templates/resolver"
 import { installBlocks } from "../templates/block-installer"
-import { buildPage, readBlockFiles, writeBlockFiles } from "../templates/page-builder"
+import { buildPage, readBlockFiles, writeBlockFiles, writeDataFiles } from "../templates/page-builder"
 import { build } from "../pipeline/build"
 import { deploy } from "../pipeline/deploy"
 import {
@@ -97,27 +97,27 @@ export async function generate(url: string, templateName?: string): Promise<void
   )
   const llmResponse = await provider.generate(GENERATE_SYSTEM_PROMPT, userMessage)
 
-  let fileMap: Record<string, string>
+  let files: Record<string, string>
+  let data: Record<string, unknown | null>
   try {
     const jsonStart = llmResponse.indexOf("{")
     const jsonEnd = llmResponse.lastIndexOf("}") + 1
-    fileMap = JSON.parse(llmResponse.slice(jsonStart, jsonEnd))
+    const parsed = JSON.parse(llmResponse.slice(jsonStart, jsonEnd))
+    files = parsed.files || {}
+    data = parsed.data || {}
   } catch {
-    throw new Error("LLM returned malformed response — unable to parse file map")
+    throw new Error("LLM returned malformed response — unable to parse { files, data }")
   }
 
-  // 7. Write modified files and build page
-  console.log("  Writing modified block files...")
-  await writeBlockFiles(siteDir, fileMap)
+  // 7. Write modified files and data
+  console.log("  Writing transformed block files...")
+  await writeBlockFiles(siteDir, files)
 
-  const content: Record<string, unknown | null> = {}
-  for (const block of template.manifest.blocks) {
-    const wasModified = Object.keys(fileMap).some((path) =>
-      path.includes(`/${block.name}`)
-    )
-    content[block.name] = wasModified ? { activated: true } : null
-  }
-  await buildPage(siteDir, template.manifest, content as Record<string, Record<string, unknown> | null>)
+  console.log("  Writing content data files...")
+  await writeDataFiles(siteDir, data)
+
+  console.log("  Building page layout...")
+  await buildPage(siteDir, template.manifest, data as Record<string, Record<string, unknown> | null>)
 
   // 8. Git init & commit
   console.log("  Initializing git repo...")

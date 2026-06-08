@@ -28,9 +28,10 @@ program
 program
   .command("iterate <slug> <prompt>")
   .description("Make an iterative change to a website")
-  .action(async (slug: string, prompt: string) => {
+  .option("-a, --admin", "Allow block-level operations (add/remove/reorder blocks)")
+  .action(async (slug: string, prompt: string, options: { admin?: boolean }) => {
     try {
-      await iterate(slug, prompt)
+      await iterate(slug, prompt, options.admin || false)
     } catch (err) {
       console.error(`Error: ${(err as Error).message}`)
       process.exit(1)

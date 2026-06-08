@@ -54,6 +54,24 @@ export async function writeBlockFiles(
   }
 }
 
+export async function writeDataFiles(
+  siteDir: string,
+  data: Record<string, unknown | null>
+): Promise<void> {
+  const dataDir = join(siteDir, "src", "data")
+  await mkdir(dataDir, { recursive: true })
+
+  for (const [blockName, blockData] of Object.entries(data)) {
+    if (blockData === null || blockData === undefined) continue
+    await writeFile(
+      join(dataDir, `${blockName}.json`),
+      JSON.stringify(blockData, null, 2)
+    )
+  }
+
+  console.log(`    Wrote ${Object.values(data).filter((v) => v !== null && v !== undefined).length} data files.`)
+}
+
 export async function buildPage(
   siteDir: string,
   manifest: TemplateManifest,

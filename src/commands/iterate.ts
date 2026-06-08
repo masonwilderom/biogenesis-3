@@ -8,10 +8,30 @@ import { deploy } from "../pipeline/deploy"
 import { STAGING_BRANCH, MAIN_BRANCH } from "../types"
 import {
   ITERATE_CLASSIFY_PROMPT,
+  ITERATE_CLASSIFY_ADMIN_PROMPT,
   ITERATE_EDIT_PROMPT,
   buildIterateClassifyMessage,
   buildIterateEditMessage,
 } from "../llm/prompts"
+
+async function readDataFiles(dir: string): Promise<Record<string, string>> {
+  const dataDir = join(dir, "src", "data")
+  const files: Record<string, string> = {}
+
+  try {
+    const entries = await readdir(dataDir)
+    for (const entry of entries) {
+      if (entry.endsWith(".json")) {
+        const filePath = `src/data/${entry}`
+        files[filePath] = await readFile(join(dataDir, entry), "utf-8")
+      }
+    }
+  } catch {
+    // No data dir yet — that's ok
+  }
+
+  return files
+}
 
 async function readAllFiles(dir: string): Promise<Record<string, string>> {
   const files: Record<string, string> = {}
@@ -42,7 +62,7 @@ async function readAllFiles(dir: string): Promise<Record<string, string>> {
   return files
 }
 
-export async function iterate(slug: string, prompt: string): Promise<void> {
+export async function iterate(slug: string, prompt: string, admin = false): Promise<void> {
   const siteDir = join(process.cwd(), "sites", slug)
 
   if (!existsSync(siteDir)) {
@@ -55,14 +75,15 @@ export async function iterate(slug: string, prompt: string): Promise<void> {
     )
   }
 
-  console.log(`\n=== Iterate: ${slug} ===\n`)
+  console.log(`\n=== Iterate: ${slug}${admin ? " (admin mode)" : ""} ===\n`)
   console.log(`  Prompt: "${prompt}"`)
 
   const provider = await createProvider()
 
   console.log("  Classifying prompt scope...")
+  const classifyPrompt = admin ? ITERATE_CLASSIFY_ADMIN_PROMPT : ITERATE_CLASSIFY_PROMPT
   const classifyResponse = await provider.generate(
-    ITERATE_CLASSIFY_PROMPT,
+    classifyPrompt,
     buildIterateClassifyMessage(prompt)
   )
 
@@ -72,8 +93,12 @@ export async function iterate(slug: string, prompt: string): Promise<void> {
     )
   }
 
-  console.log("  Reading current site files...")
-  const currentFiles = await readAllFiles(siteDir)
+  // Read files: data-only by default, all files in admin mode
+  const currentFiles = admin
+    ? await readAllFiles(siteDir)
+    : await readDataFiles(siteDir)
+
+  console.log(`  Reading ${Object.keys(currentFiles).length} files (${admin ? "admin" : "data-only"} mode)...`)
 
   console.log("  Applying changes via LLM...")
   const editResponse = await provider.generate(
