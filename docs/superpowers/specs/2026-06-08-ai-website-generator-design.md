@@ -29,7 +29,8 @@ biogenesis-3/
 │   ├── commands/
 │   │   ├── generate.ts
 │   │   ├── iterate.ts
-│   │   └── merge.ts
+│   │   ├── merge.ts
+│   │   └── discard.ts
 │   ├── pipeline/
 │   │   ├── build.ts
 │   │   └── deploy.ts
@@ -93,6 +94,11 @@ Template files use slot markers like `{{SLOT:hero}}`, `{{SLOT:features}}`, `{{SL
 1. Branch check: fails if no staging branch exists
 2. Git merges staging → main, deletes staging branch
 3. Pipeline builds and deploys to production (main branch)
+
+### `discard <slug>`
+1. Branch check: fails if no staging branch exists
+2. Git deletes staging branch (discards all staged changes)
+3. No build, no deploy — just cleanup
 
 **Branch constraint**: Each site has 1-2 branches: `main` (always) and zero or one `staging` branch. No parallel staging branches.
 
