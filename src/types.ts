@@ -45,12 +45,19 @@ export interface BlockManifestEntry {
   fields: Record<string, BlockFieldSchema>
 }
 
+export interface PageDefinition {
+  route: string
+  title: string
+  blocks: BlockManifestEntry[]
+}
+
 export interface TemplateManifest {
   name: string
   description: string
   source: string
   types: string[]
-  blocks: BlockManifestEntry[]
+  global?: BlockManifestEntry[]
+  pages: PageDefinition[]
 }
 
 export type ContentPayload = Record<string, Record<string, unknown> | null>

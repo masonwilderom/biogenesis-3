@@ -58,7 +58,6 @@ export async function generate(url: string, templateName?: string): Promise<void
     template = templates.find((t) => t.name === templateName)
     if (!template) throw new Error(`Template "${templateName}" not found`)
   } else {
-    // Classify business type for auto-selection
     console.log("  Classifying business type...")
     const classifyResponse = await provider.generate(
       CLASSIFY_BUSINESS_TYPE_PROMPT,
@@ -75,26 +74,37 @@ export async function generate(url: string, templateName?: string): Promise<void
     template = pickRandomTemplate(matches.length > 0 ? matches : templates)
   }
 
-  console.log(`  Using template: ${template.manifest.name} (${template.manifest.blocks.length} blocks)`)
+  const manifest = template.manifest
+  const pageCount = manifest.pages.length
+  const globalCount = manifest.global?.length || 0
+  console.log(`  Using template: ${manifest.name} (${pageCount} pages, ${globalCount} global)`)
 
   // 3. Scaffold site
   console.log("  Scaffolding site...")
   await scaffoldSite(siteDir)
 
-  // 4. Install blocks from manifest
-  await installBlocks(siteDir, template.manifest.blocks, template.manifest.source)
+  // 4. Install global blocks
+  if (manifest.global && manifest.global.length > 0) {
+    console.log("  Installing global blocks...")
+    await installBlocks(siteDir, manifest.global, manifest.source)
+  }
 
-  // 5. Read installed block files for LLM
+  // 5. Install ALL page blocks upfront (so deps are resolved)
+  const allPageBlocks = manifest.pages.flatMap((p) => p.blocks)
+  const uniqueBlocks = allPageBlocks.filter(
+    (b, i, arr) => arr.findIndex((x) => x.name === b.name) === i
+  )
+  console.log("  Installing page blocks...")
+  await installBlocks(siteDir, uniqueBlocks, manifest.source)
+
+  // 6. Read all installed files once
   console.log("  Reading installed block files...")
   const blockFiles = await readBlockFiles(siteDir)
 
-  // 6. LLM fills content
+  // 7. LLM fills content for ALL blocks at once
   console.log("  Filling block content with business data...")
-  const userMessage = buildGenerateUserMessage(
-    template.manifest,
-    blockFiles,
-    businessData
-  )
+  const allBlocks = [...(manifest.global || []), ...allPageBlocks]
+  const userMessage = buildGenerateUserMessage(manifest, blockFiles, businessData)
   const llmResponse = await provider.generate(GENERATE_SYSTEM_PROMPT, userMessage)
 
   let files: Record<string, string>
@@ -109,22 +119,29 @@ export async function generate(url: string, templateName?: string): Promise<void
     throw new Error("LLM returned malformed response — unable to parse { files, data }")
   }
 
-  // 7. Write modified files and data
-  console.log("  Writing transformed block files...")
+  // 8. Write modified files
+  console.log("  Writing modified block files...")
   await writeBlockFiles(siteDir, files)
 
   console.log("  Writing content data files...")
   await writeDataFiles(siteDir, data)
 
-  console.log("  Building page layout...")
-  await buildPage(siteDir, template.manifest, data as Record<string, Record<string, unknown> | null>)
+  // 9. Build each page
+  for (const page of manifest.pages) {
+    const pageData: Record<string, unknown | null> = {}
+    for (const block of page.blocks) {
+      pageData[block.name] = data[block.name] !== undefined ? data[block.name] : null
+    }
+    console.log(`  Building page: ${page.route}`)
+    await buildPage(siteDir, page, pageData, manifest)
+  }
 
-  // 8. Git init & commit
+  // 10. Git init & commit
   console.log("  Initializing git repo...")
   await init(siteDir)
   await commitAll(siteDir, "Initial site generated from template")
 
-  // 9. Build & deploy
+  // 11. Build & deploy
   console.log("  Building...")
   await build(siteDir)
 

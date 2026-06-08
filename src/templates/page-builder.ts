@@ -1,6 +1,6 @@
 import { join } from "node:path"
 import { readdir, readFile, mkdir, writeFile } from "node:fs/promises"
-import type { TemplateManifest } from "../types"
+import type { PageDefinition, TemplateManifest } from "../types"
 
 function kebabToPascal(kebab: string): string {
   return kebab
@@ -61,23 +61,30 @@ export async function writeDataFiles(
   const dataDir = join(siteDir, "src", "data")
   await mkdir(dataDir, { recursive: true })
 
+  let count = 0
   for (const [blockName, blockData] of Object.entries(data)) {
     if (blockData === null || blockData === undefined) continue
     await writeFile(
       join(dataDir, `${blockName}.json`),
       JSON.stringify(blockData, null, 2)
     )
+    count++
   }
 
-  console.log(`    Wrote ${Object.values(data).filter((v) => v !== null && v !== undefined).length} data files.`)
+  console.log(`    Wrote ${count} data files.`)
 }
 
 export async function buildPage(
   siteDir: string,
-  manifest: TemplateManifest,
-  content: Record<string, unknown | null>
+  page: PageDefinition,
+  content: Record<string, unknown | null>,
+  manifest: TemplateManifest
 ): Promise<void> {
-  const activeBlocks = manifest.blocks.filter(
+  // Combine global blocks + page blocks
+  const globalBlocks = manifest.global || []
+  const allBlocks = [...globalBlocks, ...page.blocks]
+  
+  const activeBlocks = allBlocks.filter(
     (block) => content[block.name] !== null
   )
 
@@ -91,7 +98,7 @@ export async function buildPage(
     return `    <${componentName} />`
   })
 
-  const page = `---
+  const pageContent = `---
 import Layout from "../layouts/Layout.astro"
 ${imports.join("\n")}
 ---
@@ -101,9 +108,21 @@ ${components.join("\n")}
 </Layout>
 `
 
+  // Determine file path from route
+  const route = page.route === "/" ? "index" : page.route.replace(/^\//, "").replace(/\/$/, "")
   const pagesDir = join(siteDir, "src", "pages")
   await mkdir(pagesDir, { recursive: true })
-  await writeFile(join(pagesDir, "index.astro"), page)
+  
+  // Create subdirectory for non-root pages
+  if (route !== "index") {
+    const pageDir = join(pagesDir, route)
+    await mkdir(pageDir, { recursive: true })
+    await writeFile(join(pageDir, "index.astro"), pageContent)
+  } else {
+    await writeFile(join(pagesDir, "index.astro"), pageContent)
+  }
 
-  console.log(`  Page built with ${activeBlocks.length}/${manifest.blocks.length} blocks.`)
+  const activeCount = activeBlocks.length
+  const totalCount = allBlocks.length
+  console.log(`    ${page.route}: ${activeCount}/${totalCount} blocks (${globalBlocks.length} global + ${page.blocks.length} page)`)
 }

@@ -11,9 +11,16 @@ const restaurantManifest: TemplateManifest = {
   description: "Restaurants and food businesses",
   source: "bundui",
   types: ["restaurant", "cafe", "bakery"],
-  blocks: [
-    { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
-    { name: "footer-01", optional: false, fields: { business_name: { type: "string" } } },
+  global: [],
+  pages: [
+    {
+      route: "/",
+      title: "Home",
+      blocks: [
+        { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
+        { name: "footer-01", optional: false, fields: { business_name: { type: "string" } } },
+      ],
+    },
   ],
 }
 
@@ -22,8 +29,15 @@ const genericManifest: TemplateManifest = {
   description: "Generic fallback",
   source: "bundui",
   types: ["*"],
-  blocks: [
-    { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
+  global: [],
+  pages: [
+    {
+      route: "/",
+      title: "Home",
+      blocks: [
+        { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
+      ],
+    },
   ],
 }
 
@@ -60,11 +74,11 @@ describe("template registry v2", () => {
     expect(names).not.toContain("empty-dir")
   })
 
-  it("each template has manifest with blocks", async () => {
+  it("each template has manifest with pages", async () => {
     const templates = await discoverTemplates(TEMP_DIR)
     for (const t of templates) {
       expect(t.manifest).toBeDefined()
-      expect(t.manifest.blocks.length).toBeGreaterThan(0)
+      expect(t.manifest.pages.length).toBeGreaterThan(0)
     }
   })
 

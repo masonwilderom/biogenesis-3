@@ -1,8 +1,9 @@
+// src/templates/page-builder.test.ts
 import { describe, it, expect, beforeAll, afterAll } from "bun:test"
 import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs"
 import { join } from "node:path"
 import { buildPage, readBlockFiles } from "./page-builder"
-import type { TemplateManifest } from "../types"
+import type { TemplateManifest, PageDefinition } from "../types"
 
 const TEMP_SITE = join(import.meta.dirname, "../../test-tmp-page-builder")
 
@@ -11,25 +12,35 @@ const manifest: TemplateManifest = {
   description: "test",
   source: "bundui",
   types: ["*"],
-  blocks: [
-    { name: "hero-01", optional: false, fields: { heading: { type: "string" } } },
-    { name: "testimonial-01", optional: true, fields: { heading: { type: "string" } } },
-    { name: "footer-01", optional: false, fields: { business_name: { type: "string" } } },
+  global: [
+    { name: "navbars-01", optional: false, fields: { logo_text: { type: "string" } } },
+    { name: "footers", optional: false, fields: { business_name: { type: "string" } } },
   ],
+  pages: [
+    {
+      route: "/",
+      title: "Home",
+      blocks: [
+        { name: "hero-sections-01", optional: false, fields: { heading: { type: "string" } } },
+        { name: "testimonials-01", optional: true, fields: { heading: { type: "string" } } },
+      ]
+    }
+  ]
 }
 
-  const filledFiles: Record<string, string> = {
-  "src/components/ui/hero-01.tsx": 'export default function Hero01() { return <h1>Fresh Bread</h1> }',
-  "src/components/ui/testimonial-01.tsx": 'export default function Testimonial01() { return <div>Testimonials</div> }',
-  "src/components/ui/footer-01.tsx": 'export default function Footer01() { return <footer>Lucas Bakery</footer> }',
+const filledFiles: Record<string, string> = {
+  "src/components/ui/navbars-01.tsx": 'export default function Navbars01() { return <nav>Firm</nav> }',
+  "src/components/ui/footers.tsx": 'export default function Footers() { return <footer>2025</footer> }',
+  "src/components/ui/hero-sections-01.tsx": 'export default function HeroSections01() { return <h1>Hero</h1> }',
+  "src/components/ui/testimonials-01.tsx": 'export default function Testimonials01() { return <div>Reviews</div> }',
 }
 
 beforeAll(() => {
   rmSync(TEMP_SITE, { recursive: true, force: true })
   mkdirSync(join(TEMP_SITE, "src", "pages"), { recursive: true })
-  mkdirSync(join(TEMP_SITE, "src", "components"), { recursive: true })
+  mkdirSync(join(TEMP_SITE, "src", "components", "ui"), { recursive: true })
   mkdirSync(join(TEMP_SITE, "src", "layouts"), { recursive: true })
-  writeFileSync(join(TEMP_SITE, "src", "layouts", "Layout.astro"), "---\nconst { title } = Astro.props\n---\n<html><body><slot /></body></html>")
+  writeFileSync(join(TEMP_SITE, "src", "layouts", "Layout.astro"), "---\n---\n<html><body><slot /></body></html>")
   for (const [path, content] of Object.entries(filledFiles)) {
     mkdirSync(join(TEMP_SITE, path, ".."), { recursive: true })
     writeFileSync(join(TEMP_SITE, path), content)
@@ -40,48 +51,55 @@ afterAll(() => {
   if (existsSync(TEMP_SITE)) rmSync(TEMP_SITE, { recursive: true, force: true })
 })
 
-describe("page builder", () => {
-  it("builds index.astro with all non-null blocks", async () => {
+describe("page builder v2", () => {
+  it("builds page with global + page blocks", async () => {
     const content: Record<string, unknown | null> = {
-      "hero-01": { heading: "Fresh Bread" },
-      "testimonial-01": { heading: "What Customers Say" },
-      "footer-01": { business_name: "Lucas Bakery" },
+      "navbars-01": { logo_text: "Firm" },
+      "footers": { business_name: "Firm" },
+      "hero-sections-01": { heading: "Hero" },
+      "testimonials-01": { heading: "Reviews" },
     }
 
-    await buildPage(TEMP_SITE, manifest, content)
-    const page = await Bun.file(join(TEMP_SITE, "src", "pages", "index.astro")).text()
-    expect(page).toContain("@/components/ui/hero-01")
-    expect(page).toContain("@/components/ui/testimonial-01")
-    expect(page).toContain("@/components/ui/footer-01")
+    const page = manifest.pages[0]
+    await buildPage(TEMP_SITE, page, content, manifest)
+    const pageContent = await Bun.file(join(TEMP_SITE, "src", "pages", "index.astro")).text()
+    expect(pageContent).toContain("navbars-01")
+    expect(pageContent).toContain("footers")
+    expect(pageContent).toContain("hero-sections-01")
+    expect(pageContent).toContain("testimonials-01")
   })
 
   it("skips optional blocks with null content", async () => {
     const content: Record<string, unknown | null> = {
-      "hero-01": { heading: "Fresh Bread" },
-      "testimonial-01": null,
-      "footer-01": { business_name: "Lucas Bakery" },
+      "navbars-01": { logo_text: "Firm" },
+      "footers": { business_name: "Firm" },
+      "hero-sections-01": { heading: "Hero" },
+      "testimonials-01": null,
     }
 
-    await buildPage(TEMP_SITE, manifest, content)
-    const page = await Bun.file(join(TEMP_SITE, "src", "pages", "index.astro")).text()
-    expect(page).toContain("hero-01")
-    expect(page).not.toContain("testimonial-01")
-    expect(page).toContain("footer-01")
+    const page = manifest.pages[0]
+    await buildPage(TEMP_SITE, page, content, manifest)
+    const pageContent = await Bun.file(join(TEMP_SITE, "src", "pages", "index.astro")).text()
+    expect(pageContent).toContain("navbars-01")
+    expect(pageContent).toContain("hero-sections-01")
+    expect(pageContent).not.toContain("testimonials-01")
   })
 
-  it("enforces manifest order in page", async () => {
+  it("global blocks come before page blocks", async () => {
     const content: Record<string, unknown | null> = {
-      "hero-01": { heading: "A" },
-      "testimonial-01": { heading: "B" },
-      "footer-01": { business_name: "C" },
+      "navbars-01": { logo_text: "Firm" },
+      "footers": { business_name: "Firm" },
+      "hero-sections-01": { heading: "Hero" },
+      "testimonials-01": null,
     }
 
-    await buildPage(TEMP_SITE, manifest, content)
-    const page = await Bun.file(join(TEMP_SITE, "src", "pages", "index.astro")).text()
-    const heroIdx = page.indexOf("hero-01")
-    const testIdx = page.indexOf("testimonial-01")
-    const footerIdx = page.indexOf("footer-01")
-    expect(heroIdx).toBeLessThan(testIdx)
-    expect(testIdx).toBeLessThan(footerIdx)
+    const page = manifest.pages[0]
+    await buildPage(TEMP_SITE, page, content, manifest)
+    const pageContent = await Bun.file(join(TEMP_SITE, "src", "pages", "index.astro")).text()
+    const navIdx = pageContent.indexOf("navbars-01")
+    const footerIdx = pageContent.indexOf("footers")
+    const heroIdx = pageContent.indexOf("hero-sections-01")
+    expect(navIdx).toBeLessThan(footerIdx)
+    expect(footerIdx).toBeLessThan(heroIdx)
   })
 })
