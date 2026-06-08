@@ -83,7 +83,7 @@ export async function buildPage(
 
   const imports = activeBlocks.map((block) => {
     const componentName = kebabToPascal(block.name)
-    return `import ${componentName} from "@/components/${block.name}"`
+    return `import ${componentName} from "@/components/ui/${block.name}"`
   })
 
   const components = activeBlocks.map((block) => {

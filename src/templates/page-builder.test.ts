@@ -17,10 +17,10 @@ const manifest: TemplateManifest = {
   ],
 }
 
-const filledFiles: Record<string, string> = {
-  "src/components/hero-01.tsx": 'export default function Hero01() { return <h1>Fresh Bread</h1> }',
-  "src/components/testimonial-01.tsx": 'export default function Testimonial01() { return <div>Testimonials</div> }',
-  "src/components/footer-01.tsx": 'export default function Footer01() { return <footer>Lucas Bakery</footer> }',
+  const filledFiles: Record<string, string> = {
+  "src/components/ui/hero-01.tsx": 'export default function Hero01() { return <h1>Fresh Bread</h1> }',
+  "src/components/ui/testimonial-01.tsx": 'export default function Testimonial01() { return <div>Testimonials</div> }',
+  "src/components/ui/footer-01.tsx": 'export default function Footer01() { return <footer>Lucas Bakery</footer> }',
 }
 
 beforeAll(() => {
@@ -49,9 +49,9 @@ describe("page builder", () => {
 
     await buildPage(TEMP_SITE, manifest, content)
     const page = await Bun.file(join(TEMP_SITE, "src", "pages", "index.astro")).text()
-    expect(page).toContain("hero-01")
-    expect(page).toContain("testimonial-01")
-    expect(page).toContain("footer-01")
+    expect(page).toContain("@/components/ui/hero-01")
+    expect(page).toContain("@/components/ui/testimonial-01")
+    expect(page).toContain("@/components/ui/footer-01")
   })
 
   it("skips optional blocks with null content", async () => {
