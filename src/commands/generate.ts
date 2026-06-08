@@ -26,8 +26,8 @@ function slugify(url: string): string {
   }
 }
 
-export async function generate(url: string, templateName?: string): Promise<void> {
-  const slug = slugify(url)
+export async function generate(url: string, templateName?: string, customSlug?: string): Promise<void> {
+  const slug = customSlug || slugify(url)
   const siteDir = join(process.cwd(), "sites", slug)
 
   if (existsSync(siteDir)) {

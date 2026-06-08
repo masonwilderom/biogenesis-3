@@ -16,9 +16,10 @@ program
   .command("generate <url>")
   .description("Generate a new website by scraping an existing one")
   .option("-t, --template <name>", "Template name to use (random if not specified)")
-  .action(async (url: string, options: { template?: string }) => {
+  .option("-s, --slug <slug>", "Override the auto-generated site slug (for testing multiple templates on same URL)")
+  .action(async (url: string, options: { template?: string; slug?: string }) => {
     try {
-      await generate(url, options.template)
+      await generate(url, options.template, options.slug)
     } catch (err) {
       console.error(`Error: ${(err as Error).message}`)
       process.exit(1)
