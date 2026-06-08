@@ -1,0 +1,64 @@
+{
+  "name": "business-one",
+  "description": "General-purpose small business landing page. Works for most local businesses.",
+  "types": ["*"],
+  "blocks": [
+    {
+      "name": "hero-01",
+      "optional": false,
+      "fields": {
+        "heading": { "type": "string", "hint": "Main value proposition, keep under 60 characters" },
+        "tagline": { "type": "string", "hint": "Supporting subtitle or slogan, keep under 80 characters" },
+        "cta_label": { "type": "string", "hint": "Primary call-to-action button text" },
+        "cta_href": { "type": "string", "hint": "Link for the CTA button" },
+        "image_src": { "type": "string", "hint": "Hero image URL or path" }
+      }
+    },
+    {
+      "name": "feature-section-01",
+      "optional": false,
+      "fields": {
+        "heading": { "type": "string", "hint": "Section heading, e.g. 'What We Offer'" },
+        "subtitle": { "type": "string", "hint": "Brief description below the heading" },
+        "features": {
+          "type": "array",
+          "hint": "List of features or services",
+          "items": { "title": "string", "description": "string" }
+        }
+      }
+    },
+    {
+      "name": "cta-01",
+      "optional": false,
+      "fields": {
+        "heading": { "type": "string", "hint": "CTA heading, e.g. 'Ready to Get Started?'" },
+        "body": { "type": "string", "hint": "Supporting text for the CTA" },
+        "cta_label": { "type": "string", "hint": "Button text" },
+        "cta_href": { "type": "string", "hint": "Button link" }
+      }
+    },
+    {
+      "name": "testimonial-01",
+      "optional": true,
+      "fields": {
+        "heading": { "type": "string", "hint": "Section heading" },
+        "testimonials": {
+          "type": "array",
+          "hint": "Customer testimonials. Leave empty if none found.",
+          "items": { "quote": "string", "author": "string", "role": "string" }
+        }
+      }
+    },
+    {
+      "name": "footer-01",
+      "optional": false,
+      "fields": {
+        "business_name": { "type": "string" },
+        "tagline": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" }
+      }
+    }
+  ]
+}
