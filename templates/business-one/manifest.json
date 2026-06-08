@@ -1,6 +1,6 @@
 {
   "name": "business-one",
-  "description": "General-purpose small business landing page. Blocks sourced from bundui (shadcn-compatible).",
+  "description": "General-purpose small business landing page. Blocks sourced from bundui.",
   "source": "bundui",
   "types": ["*"],
   "blocks": [
@@ -15,6 +15,19 @@
       }
     },
     {
+      "name": "feature-sections",
+      "optional": false,
+      "fields": {
+        "heading": { "type": "string", "hint": "Section heading, e.g. 'What We Offer'" },
+        "subtitle": { "type": "string", "hint": "Brief description below heading" },
+        "features": {
+          "type": "array",
+          "hint": "Feature items",
+          "items": { "title": "string", "description": "string" }
+        }
+      }
+    },
+    {
       "name": "cta-sections-01",
       "optional": false,
       "fields": {
@@ -24,15 +37,25 @@
       }
     },
     {
-      "name": "pricing-sections-01",
+      "name": "testimonials-01",
       "optional": true,
       "fields": {
-        "heading": { "type": "string", "hint": "Pricing section heading" },
-        "plans": {
+        "heading": { "type": "string", "hint": "Section heading" },
+        "testimonials": {
           "type": "array",
-          "hint": "Pricing plans",
-          "items": { "name": "string", "price": "string", "features": "array" }
+          "hint": "Customer testimonials",
+          "items": { "quote": "string", "author": "string", "role": "string" }
         }
+      }
+    },
+    {
+      "name": "footers",
+      "optional": false,
+      "fields": {
+        "business_name": { "type": "string", "hint": "Business name" },
+        "email": { "type": "string", "hint": "Contact email" },
+        "phone": { "type": "string", "hint": "Contact phone" },
+        "address": { "type": "string", "hint": "Business address" }
       }
     }
   ]

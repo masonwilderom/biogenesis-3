@@ -28,6 +28,22 @@ const NAMES = [
   "popover", "pricing-sections-01", "pricing-sections-02", "progress",
   "radio-group", "select-01", "select-02", "select-03", "select-04", "select-05",
   "sheet", "sidebar", "skeleton", "slider", "switch", "tabs", "toggle-group", "tooltip",
+  // Marketing blocks
+  "testimonials-01", "testimonials-02", "testimonials-03",
+  "footers",
+  "feature-sections",
+  "newsletter-sections",
+  "team-sections-01",
+  "stats-section-01",
+  "contact-sections",
+  "blog-sections-01", "blog-sections-02",
+  "promotional-01", "promotional-02",
+  "bento-grids",
+  "logo-clouds-01", "logo-clouds-02",
+  "navbars-01", "navbars-02", "navbars-03", "navbars-04",
+  "banners-01", "banners-02", "banners-03",
+  "cookie-consent-01", "cookie-consent-02", "cookie-consent-03",
+  "integrations",
 ]
 
 async function main() {
